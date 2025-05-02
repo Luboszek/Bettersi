@@ -151,7 +151,6 @@ function changePassword() {
     updateRanking();
 }
 
-// Reszta funkcji pozostaje bez zmian (logout, showMatches, placeBet, updateRanking, showAdminMatches, resolveMatch)
 
 
 initializeData();
