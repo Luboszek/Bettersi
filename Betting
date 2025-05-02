@@ -153,7 +153,6 @@ function changePassword() {
 
 // Reszta funkcji pozostaje bez zmian (logout, showMatches, placeBet, updateRanking, showAdminMatches, resolveMatch)
 
-// ... (w tym miejscu wklej pozostałe funkcje z poprzedniego kodu bez zmian)
 
 initializeData();
 </script>
