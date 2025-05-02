@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Zakłady dla znajomych</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .panel { display: none; padding: 20px; border: 1px solid #ccc; margin: 10px; }
+        .match { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        button { margin: 5px; padding: 5px 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        #changePasswordForm { display: none; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <!-- Formularz logowania -->
+    <div id="loginForm">
+        <h2>Zaloguj się</h2>
+        <input type="text" id="username" placeholder="Login">
+        <input type="password" id="password" placeholder="Hasło">
+        <button onclick="login()">Zaloguj</button>
+    </div>
+
+    <!-- Formularz zmiany hasła -->
+    <div id="changePasswordForm">
+        <h2>Ustaw nowe hasło</h2>
+        <input type="password" id="newPassword" placeholder="Nowe hasło">
+        <input type="password" id="confirmPassword" placeholder="Potwierdź hasło">
+        <button onclick="changePassword()">Zapisz hasło</button>
+    </div>
+
+    <!-- Panel użytkownika -->
+    <div id="userPanel" class="panel">
+        <h2>Witaj <span id="currentUser"></span>! (Punkty: <span id="userPoints">0</span>)</h2>
+        <button onclick="logout()">Wyloguj</button>
+        
+        <h3>Nadchodzące mecze:</h3>
+        <div id="matches"></div>
+        
+        <h3>Ranking:</h3>
+        <table id="rankingTable">
+            <tr><th>Miejsce</th><th>Użytkownik</th><th>Punkty</th></tr>
+        </table>
+    </div>
+
+    <!-- Panel administratora -->
+    <div id="adminPanel" class="panel">
+        <h2>Panel administratora</h2>
+        <button onclick="logout()">Wyloguj</button>
+        
+        <h3>Rozstrzygnij mecz:</h3>
+        <div id="adminMatches"></div>
+    </div>
+
+<script>
+// Inicjalizacja danych
+let users = JSON.parse(localStorage.getItem('users')) || [];
+let matches = JSON.parse(localStorage.getItem('matches')) || [];
+let currentUser = null;
+
+function initializeData() {
+    if (users.length === 0) {
+        // Tworzenie 20 użytkowników z tymczasowym hasłem
+        for (let i = 1; i <= 20; i++) {
+            users.push({
+                username: `User${i}`,
+                password: 'user123',
+                passwordChanged: false,
+                points: 0,
+                bets: []
+            });
+        }
+        // Dodawanie admina
+        users.push({
+            username: 'admin',
+            password: 'Cwel123',
+            isAdmin: true,
+            passwordChanged: true
+        });
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    if (matches.length === 0) {
+        const teams = ['Hazardziści', 'Menele', 'Baranki', 'Degeneraci'];
+        for (let i = 1; i <= 5; i++) {
+            matches.push({
+                id: Date.now() + i,
+                team1: teams[Math.floor(Math.random() * teams.length)],
+                team2: teams[Math.floor(Math.random() * teams.length)],
+                resolved: false,
+                winner: null
+            });
+        }
+        localStorage.setItem('matches', JSON.stringify(matches));
+    }
+}
+
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    const user = users.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+        currentUser = user;
+        
+        if (!user.isAdmin && !user.passwordChanged) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('changePasswordForm').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('loginForm').style.display = 'none';
+        
+        if (user.isAdmin) {
+            document.getElementById('adminPanel').style.display = 'block';
+            showAdminMatches();
+        } else {
+            document.getElementById('userPanel').style.display = 'block';
+            document.getElementById('currentUser').textContent = user.username;
+            document.getElementById('userPoints').textContent = user.points;
+            showMatches();
+            updateRanking();
+        }
+    } else {
+        alert('Błędny login lub hasło!');
+    }
+}
+
+function changePassword() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('Hasła nie są identyczne!');
+        return;
+    }
+    
+    currentUser.password = newPassword;
+    currentUser.passwordChanged = true;
+    
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    document.getElementById('changePasswordForm').style.display = 'none';
+    document.getElementById('userPanel').style.display = 'block';
+    document.getElementById('currentUser').textContent = currentUser.username;
+    document.getElementById('userPoints').textContent = currentUser.points;
+    showMatches();
+    updateRanking();
+}
+
+// Reszta funkcji pozostaje bez zmian (logout, showMatches, placeBet, updateRanking, showAdminMatches, resolveMatch)
+
+// ... (w tym miejscu wklej pozostałe funkcje z poprzedniego kodu bez zmian)
+
+initializeData();
+</script>
+</body>
+</html>
